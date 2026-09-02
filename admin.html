@@ -12,14 +12,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #ff2a2a;
-            --primary-hover: #e01f1f;
-            --primary-glow: rgba(255, 42, 42, 0.4);
+            --primary: #a855f7;
+            --primary-hover: #9333ea;
+            --primary-glow: rgba(168, 85, 247, 0.45);
             --bg-dark: #090a0d;
             --bg-panel: rgba(14, 16, 22, 0.95);
             --bg-card: rgba(24, 27, 36, 0.7);
             --border-color: rgba(255, 255, 255, 0.08);
-            --border-highlight: rgba(255, 42, 42, 0.35);
+            --border-highlight: rgba(168, 85, 247, 0.4);
             --text-main: #f0f2f5;
             --text-muted: #959ba5;
         }
@@ -70,7 +70,7 @@
         }
 
         .header-logo-badge {
-            background: linear-gradient(135deg, #ff2a2a, #800000);
+            background: linear-gradient(135deg, #a855f7, #6b21a8);
             color: #fff;
             font-size: 16px;
             font-weight: 900;
@@ -167,14 +167,14 @@
         }
 
         .btn-header-primary {
-            background: linear-gradient(135deg, var(--primary), #b30000);
+            background: linear-gradient(135deg, var(--primary), #6b21a8);
             color: #fff;
             box-shadow: 0 4px 15px var(--primary-glow);
         }
 
         .btn-header-primary:hover {
             transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(255, 42, 42, 0.6);
+            box-shadow: 0 6px 20px rgba(168, 85, 247, 0.6);
         }
 
         /* SIDEBAR ADMIN PANEL */
@@ -305,7 +305,7 @@
         }
 
         .btn-draw-start {
-            background: linear-gradient(135deg, var(--primary), #b30000);
+            background: linear-gradient(135deg, var(--primary), #6b21a8);
             grid-column: span 2;
             padding: 12px;
             font-size: 14px;
@@ -503,7 +503,7 @@
         /* SUBMIT BUTTON */
         .btn-submit-zone {
             padding: 14px;
-            background: linear-gradient(135deg, var(--primary), #990000);
+            background: linear-gradient(135deg, var(--primary), #6b21a8);
             color: #fff;
             border: none;
             border-radius: 8px;
@@ -522,9 +522,9 @@
         }
 
         .btn-submit-zone:hover {
-            background: linear-gradient(135deg, #ff4747, #cc0000);
+            background: linear-gradient(135deg, #c084fc, #7e22ce);
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 42, 42, 0.6);
+            box-shadow: 0 6px 20px rgba(168, 85, 247, 0.6);
         }
 
         /* ZONES LIST TAB */
@@ -759,11 +759,11 @@
     <!-- HEADER -->
     <header class="admin-header">
         <div class="header-brand">
-            <img src="prime.png" alt="PrimeRP" style="width: 38px; height: 38px; object-fit: contain; filter: drop-shadow(0 0 10px rgba(255, 42, 42, 0.5));">
+            <img src="prime.png" alt="PrimeRP" style="width: 38px; height: 38px; object-fit: contain; filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.5));">
             <div class="header-logo-badge">PrimeRP</div>
             <div class="header-title-group">
-                <h1><i class="fa-solid fa-map-location-dot" style="color: #ff2a2a;"></i> Panel Administratora</h1>
-                <span>Zarządzanie strefami & odrysowywanie mapy</span>
+                <h1><i class="fa-solid fa-map-location-dot" style="color: #a855f7;"></i> Panel Administratora</h1>
+                <span>Zarządzanie interiorami & odrysowywanie mapy</span>
             </div>
         </div>
 
@@ -834,18 +834,18 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label">Zajęte sety / sloty</label>
+                        <label class="form-label">Zajęte bazy / sloty</label>
                         <input type="text" class="form-control" id="zoneSlotsInput" placeholder="np. 0 / 2" value="0 / 2">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Kolor strefy</label>
                         <div class="color-palette">
-                            <div class="color-dot active" data-color="#ff2a2a" style="background: #ff2a2a;"></div>
-                            <div class="color-dot" data-color="#9b51e0" style="background: #9b51e0;"></div>
+                            <div class="color-dot active" data-color="#a855f7" style="background: #a855f7;"></div>
+                            <div class="color-dot" data-color="#ff2a2a" style="background: #ff2a2a;"></div>
                             <div class="color-dot" data-color="#2f80ed" style="background: #2f80ed;"></div>
                             <div class="color-dot" data-color="#27ae60" style="background: #27ae60;"></div>
                             <div class="color-dot" data-color="#f2994a" style="background: #f2994a;"></div>
-                            <input type="color" id="customColorPicker" value="#ff2a2a" style="opacity: 0; width: 0; height: 0; position: absolute;">
+                            <input type="color" id="customColorPicker" value="#a855f7" style="opacity: 0; width: 0; height: 0; position: absolute;">
                         </div>
                     </div>
                 </div>
@@ -956,7 +956,7 @@
     let vertexMarkers = [];
     let previewPolyline = null;
     let previewPolygon = null;
-    let currentSelectedColor = '#ff2a2a';
+    let currentSelectedColor = '#a855f7';
     let addedPhotos = [];
     let existingZones = [];
     let renderedZoneLayers = [];

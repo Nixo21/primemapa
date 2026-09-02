@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PrimeRP - Mapa stref i terytoriów</title>
+    <title>PrimeRP - Mapa interiorów Crime</title>
     <link rel="icon" type="image/png" href="prime.png">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -12,12 +12,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #ff2a2a;
-            --primary-glow: rgba(255, 42, 42, 0.4);
+            --primary: #a855f7;
+            --primary-hover: #9333ea;
+            --primary-glow: rgba(168, 85, 247, 0.45);
             --bg-dark: #090a0d;
             --bg-panel: rgba(10, 11, 15, 0.96);
             --border-color: rgba(255, 255, 255, 0.08);
-            --border-highlight: rgba(255, 42, 42, 0.35);
+            --border-highlight: rgba(168, 85, 247, 0.4);
         }
 
         * {
@@ -76,7 +77,7 @@
             width: 130px;
             height: 130px;
             border: 3px solid transparent;
-            border-top: 3px solid #ff2a2a;
+            border-top: 3px solid #a855f7;
             border-bottom: 3px solid #535353;
             border-radius: 50%;
             animation: pulse-ring 1.8s infinite ease-in-out;
@@ -87,7 +88,7 @@
             font-weight: 700;
             letter-spacing: 4px;
             text-transform: uppercase;
-            text-shadow: 0 0 10px rgba(255, 42, 42, 0.5);
+            text-shadow: 0 0 10px rgba(168, 85, 247, 0.6);
             animation: pulse-text 1.5s infinite alternate;
         }
         @keyframes pulse-ring {
@@ -126,7 +127,7 @@
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
         }
         .top-brand-badge {
-            background: linear-gradient(135deg, #ff2a2a, #880000);
+            background: linear-gradient(135deg, #a855f7, #6b21a8);
             color: #fff;
             font-family: 'Rajdhani', sans-serif;
             font-weight: 900;
@@ -167,7 +168,7 @@
         }
         .admin-nav-btn:hover {
             border-color: var(--border-highlight);
-            background: rgba(255, 42, 42, 0.15);
+            background: rgba(168, 85, 247, 0.15);
             transform: translateY(-2px);
             box-shadow: 0 10px 30px var(--primary-glow);
         }
@@ -205,7 +206,7 @@
             border-bottom: none !important;
         }
         .leaflet-control-zoom a:hover {
-            background: rgba(255, 42, 42, 0.85) !important;
+            background: rgba(168, 85, 247, 0.85) !important;
             color: #fff !important;
         }
 
@@ -401,7 +402,7 @@
             position: relative;
             margin-top: auto;
             padding: 16px 20px;
-            background: linear-gradient(135deg, #ff2a2a, #990000);
+            background: linear-gradient(135deg, #a855f7, #6b21a8);
             border: none;
             border-radius: 8px;
             color: #fff;
@@ -411,7 +412,7 @@
             cursor: pointer;
             overflow: hidden;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(255, 42, 42, 0.3);
+            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.35);
             text-decoration: none;
             display: flex;
             align-items: center;
@@ -419,8 +420,8 @@
         }
         .btn-apply:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 42, 42, 0.6);
-            background: linear-gradient(135deg, #ff4747, #cc0000);
+            box-shadow: 0 6px 20px rgba(168, 85, 247, 0.6);
+            background: linear-gradient(135deg, #c084fc, #7e22ce);
         }
 
         /* LIGHTBOX MODAL */
@@ -531,16 +532,16 @@
     <div id="loading-screen">
         <div class="spinner-container">
             <div class="spinner-ring"></div>
-            <img src="prime.png" alt="PrimeRP" style="width: 85px; height: 85px; object-fit: contain; filter: drop-shadow(0 0 15px rgba(255, 42, 42, 0.7)); animation: pulse-logo 2s infinite ease-in-out;">
+            <img src="prime.png" alt="PrimeRP" style="width: 85px; height: 85px; object-fit: contain; filter: drop-shadow(0 0 15px rgba(168, 85, 247, 0.7)); animation: pulse-logo 2s infinite ease-in-out;">
         </div>
         <div class="loading-text">Ładowanie mapy PrimeRP...</div>
     </div>
 
     <!-- BRAND BAR -->
     <div class="top-brand-bar">
-        <img src="prime.png" alt="PrimeRP" style="width: 28px; height: 28px; object-fit: contain; filter: drop-shadow(0 0 8px rgba(255, 42, 42, 0.5));">
+        <img src="prime.png" alt="PrimeRP" style="width: 28px; height: 28px; object-fit: contain; filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.5));">
         <div class="top-brand-badge">PrimeRP</div>
-        <div class="top-brand-title">Interaktywna Mapa Stref</div>
+        <div class="top-brand-title">Mapa interiorów Crime</div>
     </div>
 
     <!-- LINK TO ADMIN PANEL -->
@@ -551,7 +552,7 @@
 
     <!-- HINT BOTTOM LEFT -->
     <div class="info-bottom-left">
-        <i class="fa-solid fa-circle-info" style="color: #ff2a2a;"></i>
+        <i class="fa-solid fa-circle-info" style="color: #a855f7;"></i>
         <span>Kliknij w odrysowaną strefę na mapie, aby zobaczyć jej szczegóły oraz zdjęcia.</span>
     </div>
 
@@ -563,10 +564,10 @@
         <div class="stats-box">
             <div class="stat-item">
                 <i class="fa-solid fa-users"></i>
-                <span>Zajęte sety: <strong id="zoneMembers">0 / 0</strong></span>
+                <span>Zajęte bazy: <strong id="zoneMembers">0 / 0</strong></span>
             </div>
             <div class="stat-item2">
-                <span>Dostępne miejsca na set gangu w wybranym sektorze.</span>
+                <span>Dostępne miejsca na bazę w wybranym sektorze.</span>
             </div>
         </div>
 
@@ -707,7 +708,7 @@
         zones.forEach(zone => {
             if (!zone.coords || zone.coords.length < 3) return;
 
-            const color = zone.color || '#ff2a2a';
+            const color = zone.color || '#a855f7';
 
             const polygon = L.polygon(zone.coords, {
                 color: color,
