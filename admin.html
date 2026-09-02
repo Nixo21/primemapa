@@ -757,10 +757,6 @@
                 <span id="firebaseStatusText">Łączenie...</span>
             </div>
 
-            <button class="btn-header btn-header-secondary" id="openConfigBtn">
-                <i class="fa-solid fa-gear"></i> Konfiguracja Firebase
-            </button>
-
             <a href="/" class="btn-header btn-header-primary">
                 <i class="fa-solid fa-eye"></i> Zobacz mapę graczy
             </a>
@@ -877,37 +873,7 @@
         </div>
     </aside>
 
-    <!-- MODAL FIREBASE CONFIG -->
-    <div class="modal-backdrop" id="configModal">
-        <div class="modal-box">
-            <div class="modal-header">
-                <div class="modal-title">
-                    <i class="fa-solid fa-fire" style="color: #ffaa00;"></i> Konfiguracja Firebase Firestore
-                </div>
-                <button class="modal-close-btn" id="closeConfigModal">&times;</button>
-            </div>
 
-            <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">
-                Wklej poniżej swój obiekt konfiguracji Firebase z <strong>Firebase Console &gt; Project Settings &gt; General &gt; Your apps &gt; SDK setup</strong>.
-            </p>
-
-            <div class="form-group">
-                <label class="form-label">Firebase Config (JSON lub pola)</label>
-                <textarea class="form-control" id="firebaseConfigJsonInput" rows="7" placeholder='{
-  "apiKey": "AIzaSy...",
-  "authDomain": "twoj-projekt.firebaseapp.com",
-  "projectId": "twoj-projekt",
-  "storageBucket": "twoj-projekt.appspot.com",
-  "messagingSenderId": "...",
-  "appId": "..."
-}'></textarea>
-            </div>
-
-            <button class="btn-submit-zone" id="saveFirebaseConfigBtn">
-                <i class="fa-solid fa-floppy-disk"></i> Zapisz i połącz
-            </button>
-        </div>
-    </div>
 
     <!-- TOAST NOTIFICATION -->
     <div class="toast-notification" id="toast">
@@ -997,11 +963,6 @@
 
     const firebaseStatusBadge = document.getElementById('firebaseStatusBadge');
     const firebaseStatusText = document.getElementById('firebaseStatusText');
-    const openConfigBtn = document.getElementById('openConfigBtn');
-    const configModal = document.getElementById('configModal');
-    const closeConfigModal = document.getElementById('closeConfigModal');
-    const saveFirebaseConfigBtn = document.getElementById('saveFirebaseConfigBtn');
-    const firebaseConfigJsonInput = document.getElementById('firebaseConfigJsonInput');
 
     const toast = document.getElementById('toast');
     const toastMsg = document.getElementById('toastMsg');
@@ -1359,31 +1320,7 @@
         }
     };
 
-    // --- CONFIG MODAL LOGIC ---
-    openConfigBtn.addEventListener('click', () => {
-        const currentCfg = window.PrimeService.config;
-        firebaseConfigJsonInput.value = JSON.stringify(currentCfg, null, 2);
-        configModal.classList.add('active');
-    });
 
-    closeConfigModal.addEventListener('click', () => {
-        configModal.classList.remove('active');
-    });
-
-    saveFirebaseConfigBtn.addEventListener('click', () => {
-        try {
-            const parsed = JSON.parse(firebaseConfigJsonInput.value.trim());
-            if (!parsed.projectId || !parsed.apiKey) {
-                showToast('Konfiguracja musi zawierać co najmniej apiKey oraz projectId!', 'error');
-                return;
-            }
-            window.PrimeService.saveConfig(parsed);
-            configModal.classList.remove('active');
-            showToast('Konfiguracja została zapisana! Przeładowywanie połączenia...');
-        } catch (e) {
-            showToast('Niepoprawny format JSON! Upewnij się, że wklejasz poprawny obiekt JSON.', 'error');
-        }
-    });
 
     // Start
     initDatabaseListener();

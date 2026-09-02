@@ -7,12 +7,13 @@
  */
 
 const DEFAULT_FIREBASE_CONFIG = {
-    apiKey: "TWÓJ_API_KEY",
-    authDomain: "twoj-projekt.firebaseapp.com",
-    projectId: "twoj-projekt",
-    storageBucket: "twoj-projekt.appspot.com",
-    messagingSenderId: "1234567890",
-    appId: "1:1234567890:web:abcdef123456"
+    apiKey: "AIzaSyAby2GGsHH5O1tSKJOnRYNg90QTYreDmtc",
+    authDomain: "primerp-de269.firebaseapp.com",
+    projectId: "primerp-de269",
+    storageBucket: "primerp-de269.firebasestorage.app",
+    messagingSenderId: "132454456916",
+    appId: "1:132454456916:web:d644ac1358e39477eed7c1",
+    measurementId: "G-TM3HNEB6HD"
 };
 
 class PrimeFirebaseService {
@@ -29,12 +30,12 @@ class PrimeFirebaseService {
             const saved = localStorage.getItem('primemap_firebase_config');
             if (saved) {
                 const parsed = JSON.parse(saved);
-                if (parsed && parsed.projectId && !parsed.projectId.includes('twoj-projekt')) {
+                if (parsed && parsed.projectId && parsed.projectId === 'primerp-de269') {
                     return parsed;
                 }
             }
         } catch (e) {
-            console.warn('Nie udało się odczytać konfiguracji z localStorage:', e);
+            console.warn('Błąd odczytu konfiguracji z localStorage:', e);
         }
         return DEFAULT_FIREBASE_CONFIG;
     }
@@ -43,9 +44,7 @@ class PrimeFirebaseService {
         return Boolean(
             this.config && 
             this.config.projectId && 
-            this.config.apiKey && 
-            !this.config.projectId.includes('twoj-projekt') && 
-            !this.config.apiKey.includes('TWÓJ_API_KEY')
+            this.config.apiKey
         );
     }
 
