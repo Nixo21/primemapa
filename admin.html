@@ -602,9 +602,24 @@
             background: rgba(255, 255, 255, 0.2);
         }
 
+        .btn-item-action.edit:hover {
+            background: #2f80ed;
+            color: #fff;
+        }
+
         .btn-item-action.delete:hover {
             background: var(--primary);
             color: #fff;
+        }
+
+        .btn-submit-zone.editing {
+            background: linear-gradient(135deg, #2f80ed, #1b4fb8);
+            box-shadow: 0 4px 15px rgba(47, 128, 237, 0.4);
+        }
+
+        .btn-submit-zone.editing:hover {
+            background: linear-gradient(135deg, #4d94f7, #235cd6);
+            box-shadow: 0 6px 20px rgba(47, 128, 237, 0.6);
         }
 
         /* MODAL DIALOGS */
@@ -861,9 +876,14 @@
             </div>
 
             <!-- Zapis w Firestore -->
-            <button class="btn-submit-zone" id="saveZoneBtn">
-                <i class="fa-solid fa-cloud-arrow-up"></i> Zapisz strefę w Firestore
-            </button>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
+                <button class="btn-submit-zone" id="saveZoneBtn">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Zapisz strefę w Firestore
+                </button>
+                <button class="btn-draw btn-draw-undo" id="cancelEditBtn" style="display: none; width: 100%; padding: 12px; font-size: 13px;">
+                    <i class="fa-solid fa-xmark"></i> Anuluj edycję
+                </button>
+            </div>
         </div>
 
         <!-- TAB 2: EXISTING ZONES -->
@@ -953,6 +973,8 @@
     const zoneSlotsInput = document.getElementById('zoneSlotsInput');
     const zoneDescInput = document.getElementById('zoneDescInput');
     const saveZoneBtn = document.getElementById('saveZoneBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+    let editingZoneId = null;
 
     const photoUrlInput = document.getElementById('photoUrlInput');
     const addPhotoBtn = document.getElementById('addPhotoBtn');
@@ -1193,22 +1215,28 @@
                 photos: addedPhotos
             };
 
-            await window.PrimeService.addZone(zoneData);
-            showToast(`Strefa "${name}" została pomyślnie zapisana!`);
-
-            // Reset form
-            clearDrawing();
-            zoneNameInput.value = '';
-            zoneSlotsInput.value = '0 / 2';
-            zoneDescInput.value = '';
-            addedPhotos = [];
-            renderPhotosPreview();
+            if (editingZoneId) {
+                await window.PrimeService.updateZone(editingZoneId, zoneData);
+                showToast(`Strefa "${name}" została pomyślnie zaktualizowana!`);
+                cancelEdit();
+            } else {
+                await window.PrimeService.addZone(zoneData);
+                showToast(`Strefa "${name}" została pomyślnie zapisana!`);
+                clearDrawing();
+                zoneNameInput.value = '';
+                zoneSlotsInput.value = '0 / 2';
+                zoneDescInput.value = '';
+                addedPhotos = [];
+                renderPhotosPreview();
+            }
         } catch (err) {
             console.error('Błąd zapisu strefy:', err);
             showToast('Wystąpił błąd podczas zapisu do bazy danych: ' + err.message, 'error');
         } finally {
             saveZoneBtn.disabled = false;
-            saveZoneBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Zapisz strefę w Firestore';
+            if (!editingZoneId) {
+                saveZoneBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Zapisz strefę w Firestore';
+            }
         }
     });
 
@@ -1293,6 +1321,9 @@
                     <button class="btn-item-action" onclick="focusZone('${zone.id}')" title="Pokaż na mapie">
                         <i class="fa-solid fa-location-crosshairs"></i>
                     </button>
+                    <button class="btn-item-action edit" onclick="startEditZone('${zone.id}')" title="Edytuj strefę">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
                     <button class="btn-item-action delete" onclick="confirmDeleteZone('${zone.id}', '${zone.name.replace(/'/g, "\\'")}')" title="Usuń strefę">
                         <i class="fa-solid fa-trash"></i>
                     </button>
@@ -1300,6 +1331,91 @@
             </div>
         `).join('');
     }
+
+    window.startEditZone = function(zoneId) {
+        const zone = existingZones.find(z => z.id === zoneId);
+        if (!zone) return;
+
+        editingZoneId = zoneId;
+
+        // Przełącz na pierwszą zakładkę
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        const createTabBtn = document.querySelector('[data-tab="createTab"]');
+        createTabBtn.classList.add('active');
+        createTabBtn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Edycja strefy';
+        document.getElementById('createTab').classList.add('active');
+
+        // Uzupełnij dane formularza
+        zoneNameInput.value = zone.name || '';
+        zoneSlotsInput.value = zone.slots || '0 / 0';
+        zoneDescInput.value = zone.desc || '';
+
+        // Ustawienie koloru
+        currentSelectedColor = zone.color || '#ff2a2a';
+        document.querySelectorAll('.color-dot').forEach(d => {
+            if (d.dataset.color.toLowerCase() === currentSelectedColor.toLowerCase()) {
+                d.classList.add('active');
+            } else {
+                d.classList.remove('active');
+            }
+        });
+
+        // Zdjęcia
+        addedPhotos = [...(zone.photos || [])];
+        renderPhotosPreview();
+
+        // Kształt na mapie
+        drawnPoints = (zone.coords || []).map(p => Array.isArray(p) ? [p[0], p[1]] : [Number(p.lat), Number(p.lng)]);
+        vertexMarkers.forEach(m => map.removeLayer(m));
+        vertexMarkers = [];
+
+        drawnPoints.forEach(p => {
+            const m = L.circleMarker(p, {
+                radius: 5,
+                color: '#ffffff',
+                weight: 2,
+                fillColor: currentSelectedColor,
+                fillOpacity: 1
+            }).addTo(map);
+            vertexMarkers.push(m);
+        });
+
+        renderPreviewShape();
+        updateDrawUI();
+
+        if (drawnPoints.length > 0) {
+            map.flyToBounds(L.latLngBounds(drawnPoints), { padding: [60, 60], duration: 1.2 });
+        }
+
+        saveZoneBtn.classList.add('editing');
+        saveZoneBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Zaktualizuj strefę w Firestore';
+        cancelEditBtn.style.display = 'inline-flex';
+
+        showToast(`Tryb edycji: ${zone.name}`);
+    };
+
+    function cancelEdit() {
+        editingZoneId = null;
+        clearDrawing();
+        zoneNameInput.value = '';
+        zoneSlotsInput.value = '0 / 2';
+        zoneDescInput.value = '';
+        addedPhotos = [];
+        renderPhotosPreview();
+
+        const createTabBtn = document.querySelector('[data-tab="createTab"]');
+        createTabBtn.innerHTML = '<i class="fa-solid fa-draw-polygon"></i> Nowa strefa';
+
+        saveZoneBtn.classList.remove('editing');
+        saveZoneBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Zapisz strefę w Firestore';
+        cancelEditBtn.style.display = 'none';
+    }
+
+    cancelEditBtn.addEventListener('click', () => {
+        cancelEdit();
+        showToast('Anulowano edycję.');
+    });
 
     window.focusZone = function(zoneId) {
         const zone = existingZones.find(z => z.id === zoneId);

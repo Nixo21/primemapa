@@ -163,6 +163,33 @@ class PrimeFirebaseService {
         }
     }
 
+    // Aktualizacja istniejącej strefy
+    async updateZone(zoneId, zoneData) {
+        const sanitizedCoords = (zoneData.coords || []).map(p => {
+            if (Array.isArray(p)) return { lat: p[0], lng: p[1] };
+            if (p && typeof p === 'object') return { lat: p.lat, lng: p.lng };
+            return p;
+        });
+
+        const payload = {
+            ...zoneData,
+            coords: sanitizedCoords,
+            updatedAt: new Date().toISOString()
+        };
+
+        if (this.isReady && this.db) {
+            await this.db.collection('zones').doc(zoneId).update(payload);
+            return { id: zoneId, ...payload, coords: zoneData.coords };
+        } else {
+            const localData = localStorage.getItem('primemap_local_zones');
+            let zones = localData ? JSON.parse(localData) : [];
+            zones = zones.map(z => z.id === zoneId ? { ...z, ...payload, coords: zoneData.coords } : z);
+            localStorage.setItem('primemap_local_zones', JSON.stringify(zones));
+            window.dispatchEvent(new Event('storage'));
+            return { id: zoneId, ...payload, coords: zoneData.coords };
+        }
+    }
+
     // Usunięcie strefy
     async deleteZone(zoneId) {
         if (this.isReady && this.db) {
