@@ -96,7 +96,15 @@ class PrimeFirebaseService {
             return this.db.collection('zones').onSnapshot((snapshot) => {
                 const zones = [];
                 snapshot.forEach((doc) => {
-                    zones.push({ id: doc.id, ...doc.data() });
+                    const data = doc.data();
+                    const normalizedCoords = (data.coords || []).map(p => {
+                        if (Array.isArray(p)) return [p[0], p[1]];
+                        if (p && typeof p === 'object' && ('lat' in p || 'lng' in p)) {
+                            return [Number(p.lat), Number(p.lng)];
+                        }
+                        return p;
+                    });
+                    zones.push({ id: doc.id, ...data, coords: normalizedCoords });
                 });
                 onUpdate(zones);
             }, (error) => {
@@ -127,18 +135,27 @@ class PrimeFirebaseService {
 
     // Zapisanie nowej strefy
     async addZone(zoneData) {
+        // Firestore nie zezwala na zagnieżdżone tablice (nested arrays, np. [[lat, lng]]),
+        // dlatego konwertujemy wierzchołki na tablicę obiektów [{lat, lng}, ...]
+        const sanitizedCoords = (zoneData.coords || []).map(p => {
+            if (Array.isArray(p)) return { lat: p[0], lng: p[1] };
+            if (p && typeof p === 'object') return { lat: p.lat, lng: p.lng };
+            return p;
+        });
+
         const payload = {
             ...zoneData,
+            coords: sanitizedCoords,
             createdAt: new Date().toISOString()
         };
 
         if (this.isReady && this.db) {
             const docRef = await this.db.collection('zones').add(payload);
-            return { id: docRef.id, ...payload };
+            return { id: docRef.id, ...payload, coords: zoneData.coords };
         } else {
             const localData = localStorage.getItem('primemap_local_zones');
             const zones = localData ? JSON.parse(localData) : [];
-            const newZone = { id: 'local_' + Date.now(), ...payload };
+            const newZone = { id: 'local_' + Date.now(), ...payload, coords: zoneData.coords };
             zones.push(newZone);
             localStorage.setItem('primemap_local_zones', JSON.stringify(zones));
             window.dispatchEvent(new Event('storage'));
