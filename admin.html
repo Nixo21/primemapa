@@ -40,8 +40,71 @@
         html, body, #map {
             width: 100%;
             height: 100%;
-            background-color: #0fa8d2;
+            background-color: #0a0c10;
             overflow: hidden;
+            transition: background-color 0.3s ease;
+        }
+
+        body.classic-water-theme, body.classic-water-theme #map {
+            background-color: #0fa8d2 !important;
+        }
+
+        body.dark-tiles-theme .leaflet-tile {
+            filter: brightness(0.75) contrast(1.2) saturate(0.85);
+        }
+
+        .admin-cat-badge {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            vertical-align: middle;
+        }
+        .admin-cat-badge.willa {
+            background: rgba(234, 179, 8, 0.2);
+            color: #fde047;
+            border: 1px solid rgba(234, 179, 8, 0.4);
+        }
+        .admin-cat-badge.crime {
+            background: rgba(168, 85, 247, 0.2);
+            color: #d8b4fe;
+            border: 1px solid rgba(168, 85, 247, 0.4);
+        }
+
+        .admin-filter-bar {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 4px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        .admin-filter-pill {
+            flex: 1;
+            padding: 6px;
+            text-align: center;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .admin-filter-pill:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .admin-filter-pill.active {
+            background: var(--primary);
+            color: #fff;
         }
 
         /* TOP NAVIGATION BAR */
@@ -768,6 +831,18 @@
         </div>
 
         <div class="header-actions">
+            <!-- Map Theme & Style Controls for Admin -->
+            <div style="display: flex; align-items: center; gap: 6px; background: rgba(0,0,0,0.3); padding: 4px; border-radius: 8px; border: 1px solid var(--border-color);">
+                <select class="form-control" id="adminMapStyleSelect" style="padding: 4px 8px; font-size: 12px; height: 32px; width: auto; border: none;" title="Zmień wersję mapy GTA">
+                    <option value="atlas">🗺️ GTA Atlas</option>
+                    <option value="road">🛣️ GTA Ciemna (Road)</option>
+                    <option value="satellite">🛰️ Satelita</option>
+                </select>
+                <button id="adminDarkToggle" class="btn-header btn-header-secondary" style="padding: 6px 12px; font-size: 12px; height: 32px;" title="Przełącz ciemny / jasny ocean">
+                    <i class="fa-solid fa-moon"></i> <span id="adminDarkToggleText">Ciemny ocean</span>
+                </button>
+            </div>
+
             <div class="status-badge" id="firebaseStatusBadge">
                 <span class="status-dot"></span>
                 <span id="firebaseStatusText">Łączenie...</span>
@@ -829,7 +904,26 @@
 
                 <div class="form-group">
                     <label class="form-label">Nazwa strefy / lokacji *</label>
-                    <input type="text" class="form-control" id="zoneNameInput" placeholder="np. Hood Families, Mirror Park...">
+                    <input type="text" class="form-control" id="zoneNameInput" placeholder="np. Hood Families, Mirror Park, Madrazo's Ranch...">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Kategoria *</label>
+                        <select class="form-control" id="zoneCategoryInput">
+                            <option value="Crime" selected>Crime</option>
+                            <option value="Willa">Willa</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="crimeSubcategoryGroup">
+                        <label class="form-label">Podkategoria Crime (opcjonalnie)</label>
+                        <select class="form-control" id="zoneSubcategoryInput">
+                            <option value="">-- Brak / Ogólne --</option>
+                            <option value="Gang">Gang</option>
+                            <option value="Kartel">Kartel</option>
+                            <option value="Mafia">Mafia</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="form-row">
@@ -840,11 +934,12 @@
                     <div class="form-group">
                         <label class="form-label">Kolor strefy</label>
                         <div class="color-palette">
-                            <div class="color-dot active" data-color="#a855f7" style="background: #a855f7;"></div>
-                            <div class="color-dot" data-color="#ff2a2a" style="background: #ff2a2a;"></div>
-                            <div class="color-dot" data-color="#2f80ed" style="background: #2f80ed;"></div>
-                            <div class="color-dot" data-color="#27ae60" style="background: #27ae60;"></div>
-                            <div class="color-dot" data-color="#f2994a" style="background: #f2994a;"></div>
+                            <div class="color-dot active" data-color="#a855f7" style="background: #a855f7;" title="Fioletowy (Crime)"></div>
+                            <div class="color-dot" data-color="#eab308" style="background: #eab308;" title="Złoty (Willa)"></div>
+                            <div class="color-dot" data-color="#ff2a2a" style="background: #ff2a2a;" title="Czerwony"></div>
+                            <div class="color-dot" data-color="#2f80ed" style="background: #2f80ed;" title="Niebieski"></div>
+                            <div class="color-dot" data-color="#27ae60" style="background: #27ae60;" title="Zielony"></div>
+                            <div class="color-dot" data-color="#f2994a" style="background: #f2994a;" title="Pomarańczowy"></div>
                             <input type="color" id="customColorPicker" value="#a855f7" style="opacity: 0; width: 0; height: 0; position: absolute;">
                         </div>
                     </div>
@@ -888,6 +983,11 @@
 
         <!-- TAB 2: EXISTING ZONES -->
         <div class="tab-content" id="listTab">
+            <div class="admin-filter-bar" id="adminFilterBar">
+                <button class="admin-filter-pill active" data-filter="all">Wszystkie</button>
+                <button class="admin-filter-pill" data-filter="willa">Wille</button>
+                <button class="admin-filter-pill" data-filter="crime">Crime</button>
+            </div>
             <div class="zones-list" id="zonesListContainer">
                 <div class="no-photos-msg">Ładowanie stref z bazy danych...</div>
             </div>
@@ -923,30 +1023,80 @@
         attributionControl: false
     });
 
-    // Custom GTA Tile Layer
-    L.TileLayer.Gta = L.TileLayer.extend({
-        getTileUrl: function(coords) {
-            return `https://bbhkubus.pl/gta-v/tiles/atlas/${coords.z}-${coords.x}_${coords.y}.png`;
-        }
-    });
-    L.tileLayer.gta = function(options) {
-        return new L.TileLayer.Gta('', options);
-    };
-
     const mapSize = 32768; 
     const southWest = map.unproject([0, mapSize], 7);
     const northEast = map.unproject([mapSize, 0], 7);
     const bounds = L.latLngBounds(southWest, northEast);
 
-    L.tileLayer.gta({
-        tileSize: 256,
-        noWrap: true,
-        maxNativeZoom: 7,
-        minNativeZoom: 0,
-        maxZoom: 9,
-        minZoom: 1,
-        bounds: bounds
-    }).addTo(map);
+    // Dynamic GTA Tile Layer supporting 'atlas', 'road' (dark), 'satellite'
+    let currentMapTileLayer = null;
+    let currentMapStyle = localStorage.getItem('primemap_map_style') || 'atlas';
+    let isDarkOcean = localStorage.getItem('primemap_dark_ocean') !== 'false';
+
+    function setAdminMapStyle(styleName) {
+        currentMapStyle = styleName;
+        localStorage.setItem('primemap_map_style', styleName);
+
+        if (currentMapTileLayer) {
+            map.removeLayer(currentMapTileLayer);
+        }
+
+        const TileClass = L.TileLayer.extend({
+            getTileUrl: function(coords) {
+                return `https://bbhkubus.pl/gta-v/tiles/${currentMapStyle}/${coords.z}-${coords.x}_${coords.y}.png`;
+            }
+        });
+
+        currentMapTileLayer = new TileClass('', {
+            tileSize: 256,
+            noWrap: true,
+            maxNativeZoom: 7,
+            minNativeZoom: 0,
+            maxZoom: 9,
+            minZoom: 1,
+            bounds: bounds
+        }).addTo(map);
+
+        const select = document.getElementById('adminMapStyleSelect');
+        if (select && select.value !== styleName) select.value = styleName;
+    }
+
+    function setAdminDarkOceanTheme(enabled) {
+        isDarkOcean = enabled;
+        localStorage.setItem('primemap_dark_ocean', enabled);
+
+        const darkBtn = document.getElementById('adminDarkToggle');
+        const darkText = document.getElementById('adminDarkToggleText');
+
+        if (enabled) {
+            document.body.classList.remove('classic-water-theme');
+            document.body.classList.add('dark-tiles-theme');
+            if (darkBtn) darkBtn.className = 'btn-header btn-header-primary';
+            if (darkText) darkText.innerText = 'Ciemny ocean';
+        } else {
+            document.body.classList.add('classic-water-theme');
+            document.body.classList.remove('dark-tiles-theme');
+            if (darkBtn) darkBtn.className = 'btn-header btn-header-secondary';
+            if (darkText) darkText.innerText = 'Jasny ocean';
+        }
+    }
+
+    setAdminMapStyle(currentMapStyle);
+    setAdminDarkOceanTheme(isDarkOcean);
+
+    const adminMapStyleSelect = document.getElementById('adminMapStyleSelect');
+    if (adminMapStyleSelect) {
+        adminMapStyleSelect.addEventListener('change', (e) => {
+            setAdminMapStyle(e.target.value);
+        });
+    }
+
+    const adminDarkToggle = document.getElementById('adminDarkToggle');
+    if (adminDarkToggle) {
+        adminDarkToggle.addEventListener('click', () => {
+            setAdminDarkOceanTheme(!isDarkOcean);
+        });
+    }
 
     map.setView([-45, 45], 4);
 
@@ -960,6 +1110,7 @@
     let addedPhotos = [];
     let existingZones = [];
     let renderedZoneLayers = [];
+    let currentAdminFilter = 'all';
 
     // --- DOM REFERENCES ---
     const startDrawBtn = document.getElementById('startDrawBtn');
@@ -970,11 +1121,33 @@
     const drawStatusText = document.getElementById('drawStatusText');
 
     const zoneNameInput = document.getElementById('zoneNameInput');
+    const zoneCategoryInput = document.getElementById('zoneCategoryInput');
+    const zoneSubcategoryInput = document.getElementById('zoneSubcategoryInput');
+    const crimeSubcategoryGroup = document.getElementById('crimeSubcategoryGroup');
     const zoneSlotsInput = document.getElementById('zoneSlotsInput');
     const zoneDescInput = document.getElementById('zoneDescInput');
     const saveZoneBtn = document.getElementById('saveZoneBtn');
     const cancelEditBtn = document.getElementById('cancelEditBtn');
     let editingZoneId = null;
+
+    if (zoneCategoryInput) {
+        zoneCategoryInput.addEventListener('change', () => {
+            if (zoneCategoryInput.value === 'Willa') {
+                crimeSubcategoryGroup.style.display = 'none';
+                zoneSubcategoryInput.value = '';
+                if (currentSelectedColor === '#a855f7') {
+                    const yellowDot = document.querySelector('.color-dot[data-color="#eab308"]');
+                    if (yellowDot) yellowDot.click();
+                }
+            } else {
+                crimeSubcategoryGroup.style.display = 'flex';
+                if (currentSelectedColor === '#eab308') {
+                    const purpleDot = document.querySelector('.color-dot[data-color="#a855f7"]');
+                    if (purpleDot) purpleDot.click();
+                }
+            }
+        });
+    }
 
     const photoUrlInput = document.getElementById('photoUrlInput');
     const addPhotoBtn = document.getElementById('addPhotoBtn');
@@ -1188,6 +1361,8 @@
     // --- SAVE TO FIRESTORE ---
     saveZoneBtn.addEventListener('click', async () => {
         const name = zoneNameInput.value.trim();
+        const category = zoneCategoryInput ? zoneCategoryInput.value : 'Crime';
+        const subcategory = (category === 'Crime' && zoneSubcategoryInput) ? zoneSubcategoryInput.value : '';
         const slots = zoneSlotsInput.value.trim() || '0 / 0';
         const desc = zoneDescInput.value.trim();
 
@@ -1208,6 +1383,8 @@
         try {
             const zoneData = {
                 name: name,
+                category: category,
+                subcategory: subcategory,
                 slots: slots,
                 coords: drawnPoints,
                 color: currentSelectedColor,
@@ -1221,9 +1398,12 @@
                 cancelEdit();
             } else {
                 await window.PrimeService.addZone(zoneData);
-                showToast(`Strefa "${name}" została pomyślnie zapisana!`);
+                showToast(`Strefa "${name}" [${category}] została pomyślnie zapisana!`);
                 clearDrawing();
                 zoneNameInput.value = '';
+                if (zoneCategoryInput) zoneCategoryInput.value = 'Crime';
+                if (zoneSubcategoryInput) zoneSubcategoryInput.value = '';
+                if (crimeSubcategoryGroup) crimeSubcategoryGroup.style.display = 'flex';
                 zoneSlotsInput.value = '0 / 2';
                 zoneDescInput.value = '';
                 addedPhotos = [];
@@ -1277,20 +1457,32 @@
         zones.forEach(zone => {
             if (!zone.coords || zone.coords.length < 3) return;
 
+            const isWilla = (zone.category || '').toLowerCase() === 'willa';
+            const defaultColor = isWilla ? '#eab308' : '#a855f7';
+            const color = zone.color || defaultColor;
+
             const polygon = L.polygon(zone.coords, {
-                color: zone.color || '#ff2a2a',
+                color: color,
                 weight: 2,
-                fillColor: zone.color || '#ff2a2a',
+                fillColor: color,
                 fillOpacity: 0.35,
                 smoothFactor: 2.0
             }).addTo(map);
 
             const center = polygon.getBounds().getCenter();
+            const tagDisplay = isWilla 
+                ? '<i class="fa-solid fa-house-chimney" style="color:#fde047;"></i> Willa' 
+                : `<i class="fa-solid fa-skull" style="color:#d8b4fe;"></i> Crime${zone.subcategory ? ` (${zone.subcategory})` : ''}`;
+
             const tooltip = L.tooltip({ permanent: true, direction: 'center', className: 'zone-label' })
                 .setContent(`
                     <div class="zone-label-container">
                         <div class="zone-label-title">${zone.name}</div>
-                        <div class="zone-label-pill">${zone.slots || '0/0'} <i class="fa-solid fa-users"></i></div>
+                        <div class="zone-label-pill">
+                            <span>${zone.slots || '0/0'} <i class="fa-solid fa-users"></i></span>
+                            <span style="opacity:0.35; margin:0 3px;">•</span>
+                            <span>${tagDisplay}</span>
+                        </div>
                     </div>
                 `).setLatLng(center).addTo(map);
 
@@ -1299,37 +1491,67 @@
         });
     }
 
+    // Obsługa kliknięć filtrów w panelu admina
+    document.querySelectorAll('.admin-filter-pill').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.admin-filter-pill').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentAdminFilter = btn.dataset.filter;
+            renderZonesList(existingZones);
+        });
+    });
+
     function renderZonesList(zones) {
         if (!zones || zones.length === 0) {
             zonesListContainer.innerHTML = '<div class="no-photos-msg">Brak stref w bazie danych. Dodaj pierwszą strefę!</div>';
             return;
         }
 
-        zonesListContainer.innerHTML = zones.map(zone => `
-            <div class="zone-list-item" id="zone-item-${zone.id}">
-                <div class="zone-list-info">
-                    <div class="zone-list-title">
-                        <span class="zone-color-indicator" style="background: ${zone.color || '#ff2a2a'};"></span>
-                        ${zone.name}
+        let filtered = zones;
+        if (currentAdminFilter === 'willa') {
+            filtered = zones.filter(z => (z.category || '').toLowerCase() === 'willa');
+        } else if (currentAdminFilter === 'crime') {
+            filtered = zones.filter(z => (z.category || 'crime').toLowerCase() === 'crime');
+        }
+
+        if (filtered.length === 0) {
+            zonesListContainer.innerHTML = '<div class="no-photos-msg">Brak stref w wybranej kategorii.</div>';
+            return;
+        }
+
+        zonesListContainer.innerHTML = filtered.map(zone => {
+            const isWilla = (zone.category || '').toLowerCase() === 'willa';
+            const catBadge = isWilla
+                ? '<span class="admin-cat-badge willa"><i class="fa-solid fa-house-chimney"></i> Willa</span>'
+                : `<span class="admin-cat-badge crime"><i class="fa-solid fa-skull"></i> Crime${zone.subcategory ? ` • ${zone.subcategory}` : ''}</span>`;
+
+            return `
+                <div class="zone-list-item" id="zone-item-${zone.id}">
+                    <div class="zone-list-info">
+                        <div class="zone-list-title">
+                            <span class="zone-color-indicator" style="background: ${zone.color || '#ff2a2a'};"></span>
+                            ${zone.name}
+                            ${catBadge}
+                        </div>
+                        <div class="zone-list-meta">
+                            <span><i class="fa-solid fa-users"></i> ${zone.slots || '0/0'}</span>
+                            <span><i class="fa-solid fa-camera"></i> ${zone.photos ? zone.photos.length : 0} zdjęć</span>
+                        </div>
                     </div>
-                    <div class="zone-list-meta">
-                        <span><i class="fa-solid fa-users"></i> ${zone.slots || '0/0'}</span>
-                        <span><i class="fa-solid fa-camera"></i> ${zone.photos ? zone.photos.length : 0} zdjęć</span>
+                    <div class="zone-list-actions">
+                        <button class="btn-item-action" onclick="focusZone('${zone.id}')" title="Pokaż na mapie">
+                            <i class="fa-solid fa-location-crosshairs"></i>
+                        </button>
+                        <button class="btn-item-action edit" onclick="startEditZone('${zone.id}')" title="Edytuj strefę">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button class="btn-item-action delete" onclick="confirmDeleteZone('${zone.id}', '${zone.name.replace(/'/g, "\\'")}')" title="Usuń strefę">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
                     </div>
                 </div>
-                <div class="zone-list-actions">
-                    <button class="btn-item-action" onclick="focusZone('${zone.id}')" title="Pokaż na mapie">
-                        <i class="fa-solid fa-location-crosshairs"></i>
-                    </button>
-                    <button class="btn-item-action edit" onclick="startEditZone('${zone.id}')" title="Edytuj strefę">
-                        <i class="fa-solid fa-pen-to-square"></i>
-                    </button>
-                    <button class="btn-item-action delete" onclick="confirmDeleteZone('${zone.id}', '${zone.name.replace(/'/g, "\\'")}')" title="Usuń strefę">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     window.startEditZone = function(zoneId) {
@@ -1348,11 +1570,22 @@
 
         // Uzupełnij dane formularza
         zoneNameInput.value = zone.name || '';
+        const isWilla = (zone.category || '').toLowerCase() === 'willa';
+        if (zoneCategoryInput) {
+            zoneCategoryInput.value = isWilla ? 'Willa' : 'Crime';
+        }
+        if (zoneSubcategoryInput) {
+            zoneSubcategoryInput.value = zone.subcategory || '';
+        }
+        if (crimeSubcategoryGroup) {
+            crimeSubcategoryGroup.style.display = isWilla ? 'none' : 'flex';
+        }
+
         zoneSlotsInput.value = zone.slots || '0 / 0';
         zoneDescInput.value = zone.desc || '';
 
         // Ustawienie koloru
-        currentSelectedColor = zone.color || '#ff2a2a';
+        currentSelectedColor = zone.color || (isWilla ? '#eab308' : '#a855f7');
         document.querySelectorAll('.color-dot').forEach(d => {
             if (d.dataset.color.toLowerCase() === currentSelectedColor.toLowerCase()) {
                 d.classList.add('active');
@@ -1399,6 +1632,9 @@
         editingZoneId = null;
         clearDrawing();
         zoneNameInput.value = '';
+        if (zoneCategoryInput) zoneCategoryInput.value = 'Crime';
+        if (zoneSubcategoryInput) zoneSubcategoryInput.value = '';
+        if (crimeSubcategoryGroup) crimeSubcategoryGroup.style.display = 'flex';
         zoneSlotsInput.value = '0 / 2';
         zoneDescInput.value = '';
         addedPhotos = [];
