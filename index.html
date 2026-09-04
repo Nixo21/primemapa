@@ -731,6 +731,11 @@
             display: none !important;
         }
 
+        /* Przy ukrytych etykietach najechanie na strefę płynnie wyświetla tylko tę jedną etykietę */
+        body.hide-map-labels .zone-label.zone-hover-active {
+            display: block !important;
+        }
+
         /* Styl podświetlenia po najechaniu myszką */
         .zone-hover-active {
             z-index: 9999 !important;
@@ -741,6 +746,17 @@
         .zone-hover-active .zone-label-pill {
             border-color: var(--primary);
             box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        /* Kompaktowe etykiety przy małym powiększeniu */
+        body.zoom-low .zone-label-title {
+            font-size: 10px;
+            letter-spacing: 0.5px;
+        }
+        body.zoom-low .zone-label-pill {
+            padding: 2px 7px;
+            font-size: 10px;
+            gap: 3px;
         }
 
         /* RESPONSIVE */
@@ -1021,6 +1037,8 @@
 
     function updateLabelVisibility() {
         const currentZoom = map.getZoom();
+        document.body.classList.toggle('zoom-low', currentZoom <= 5);
+
         if (labelMode === 'none') {
             document.body.classList.add('hide-map-labels');
             labelsToggleText.innerText = 'Etykiety: Wył';
@@ -1030,8 +1048,9 @@
             labelsToggleText.innerText = 'Etykiety: Zawsze';
             labelsToggleBtn.classList.add('active');
         } else {
-            // Auto: przy oddaleniu (<=4) ukryj stałe etykiety, aby nie kolidowały w South LS!
-            if (currentZoom <= 4) {
+            // Auto: przy oddaleniu (<=5) ukryj stałe etykiety, aby nie nakładały się w South LS!
+            // Etykiety pojawiają się automatycznie przy drugim przybliżeniu (zoom >= 6), gdzie jest czysto i czytelnie
+            if (currentZoom <= 5) {
                 document.body.classList.add('hide-map-labels');
             } else {
                 document.body.classList.remove('hide-map-labels');
@@ -1050,7 +1069,7 @@
         updateLabelVisibility();
     });
 
-    map.on('zoomend', () => {
+    map.on('zoom zoomend', () => {
         updateLabelVisibility();
     });
 
