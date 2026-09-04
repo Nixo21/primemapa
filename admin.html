@@ -840,6 +840,7 @@
             justify-content: center;
             pointer-events: none;
             user-select: none;
+            transition: all 0.2s ease;
         }
         .zone-label-title {
             font-size: 14px;
@@ -862,6 +863,29 @@
             display: inline-flex;
             align-items: center;
             gap: 5px;
+            white-space: nowrap;
+        }
+
+        /* Tryb kompaktowy przy małym powiększeniu */
+        body.zoom-compact .zone-label-container {
+            flex-direction: row !important;
+            background: rgba(11, 13, 19, 0.94);
+            padding: 2px 8px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            gap: 5px;
+            white-space: nowrap;
+        }
+        body.zoom-compact .zone-label-title {
+            font-size: 10.5px;
+            margin-bottom: 0;
+            letter-spacing: 0.4px;
+        }
+        body.zoom-compact .zone-label-pill {
+            background: transparent !important;
+            padding: 0 !important;
+            font-size: 10px;
+            gap: 4px;
         }
     </style>
 </head>
@@ -1151,6 +1175,12 @@
             setAdminDarkOceanTheme(!isDarkOcean);
         });
     }
+
+    function updateAdminZoomClasses() {
+        document.body.classList.toggle('zoom-compact', map.getZoom() <= 5);
+    }
+    map.on('zoom zoomend', updateAdminZoomClasses);
+    updateAdminZoomClasses();
 
     map.setView([-45, 45], 4);
 

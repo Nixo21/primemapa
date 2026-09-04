@@ -684,12 +684,12 @@
             gap: 6px;
         }
 
-        /* --- STYL ETYKIET STREF NA MAPIE (INTELIGENTNE / BEZ KOLIZJI) --- */
+        /* --- STYL ETYKIET STREF NA MAPIE --- */
         .zone-label {
             background: transparent !important;
             border: none !important;
             box-shadow: none !important;
-            transition: opacity 0.2s ease;
+            transition: opacity 0.2s ease, transform 0.2s ease;
         }
         .zone-label-container {
             display: flex;
@@ -698,7 +698,7 @@
             justify-content: center;
             pointer-events: none;
             user-select: none;
-            transition: transform 0.2s ease;
+            transition: all 0.2s ease;
         }
         .zone-label-title {
             font-size: 12px;
@@ -724,39 +724,65 @@
             gap: 5px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
             border: 1px solid rgba(255, 255, 255, 0.12);
+            white-space: nowrap;
         }
 
-        /* Klasa ukrywająca etykiety przy oddaleniu, aby nie nakładały się w mieście */
+        /* --- KOMPAKTOWY WIDOK PRZY MNIEJSZYM POWIĘKSZENIU (ZOOM <= 5 / MIASTO) --- */
+        /* Zapewnia zero kolizji i pełną czytelność stref w South Los Santos! */
+        body.zoom-compact .zone-label-container {
+            flex-direction: row !important;
+            background: rgba(11, 13, 19, 0.94);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            padding: 2px 8px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.85);
+            gap: 5px;
+            white-space: nowrap;
+        }
+        body.zoom-compact .zone-label-title {
+            font-size: 10.5px;
+            font-weight: 700;
+            margin-bottom: 0;
+            letter-spacing: 0.4px;
+        }
+        body.zoom-compact .zone-label-pill {
+            background: transparent !important;
+            padding: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+            font-size: 10px;
+            gap: 4px;
+        }
+        body.zoom-compact .label-cat-name {
+            display: none; /* Ukrywa długi napis kategorii, pozostawia tylko ikonę (czaszka / domek) */
+        }
+
+        /* Klasa ukrywająca etykiety przy maksymalnym oddaleniu (zoom <= 3) */
         body.hide-map-labels .zone-label {
             display: none !important;
         }
 
-        /* Przy ukrytych etykietach najechanie na strefę płynnie wyświetla tylko tę jedną etykietę */
+        /* Przy ukrytych etykietach najechanie kursorem natychmiast wyświetla strefę */
         body.hide-map-labels .zone-label.zone-hover-active {
             display: block !important;
         }
 
         /* Styl podświetlenia po najechaniu myszką */
         .zone-hover-active {
-            z-index: 9999 !important;
+            z-index: 99999 !important;
         }
         .zone-hover-active .zone-label-container {
-            transform: scale(1.12);
+            transform: scale(1.15) !important;
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 18px var(--primary-glow) !important;
         }
         .zone-hover-active .zone-label-pill {
             border-color: var(--primary);
-            box-shadow: 0 0 15px var(--primary-glow);
         }
-
-        /* Kompaktowe etykiety przy małym powiększeniu */
-        body.zoom-low .zone-label-title {
-            font-size: 10px;
-            letter-spacing: 0.5px;
-        }
-        body.zoom-low .zone-label-pill {
-            padding: 2px 7px;
-            font-size: 10px;
-            gap: 3px;
+        .zone-hover-active .label-cat-name {
+            display: inline !important;
         }
 
         /* RESPONSIVE */
@@ -1037,7 +1063,9 @@
 
     function updateLabelVisibility() {
         const currentZoom = map.getZoom();
-        document.body.classList.toggle('zoom-low', currentZoom <= 5);
+
+        // Tryb kompaktowy (horyzontalna miniaturowa pigułka) dla zoom <= 5 - zapobiega nakładaniu się w South LS
+        document.body.classList.toggle('zoom-compact', currentZoom <= 5);
 
         if (labelMode === 'none') {
             document.body.classList.add('hide-map-labels');
@@ -1048,9 +1076,11 @@
             labelsToggleText.innerText = 'Etykiety: Zawsze';
             labelsToggleBtn.classList.add('active');
         } else {
-            // Auto: przy oddaleniu (<=5) ukryj stałe etykiety, aby nie nakładały się w South LS!
-            // Etykiety pojawiają się automatycznie przy drugim przybliżeniu (zoom >= 6), gdzie jest czysto i czytelnie
-            if (currentZoom <= 5) {
+            // Auto:
+            // Etykiety są WIDOCZNE już przy zoomie 4 i 5 (w estetycznym trybie kompaktowym bez kolizji)
+            // oraz przy zoomie >= 6 (w pełnym formacie).
+            // Ukrywane są jedynie przy maksymalnym oddaleniu (zoom <= 3).
+            if (currentZoom <= 3) {
                 document.body.classList.add('hide-map-labels');
             } else {
                 document.body.classList.remove('hide-map-labels');
@@ -1193,21 +1223,20 @@
 
             const center = polygon.getBounds().getCenter();
             
-            let tagDisplay = '';
-            if (isWilla) {
-                tagDisplay = '<i class="fa-solid fa-house-chimney" style="color:#fde047;"></i> Willa';
-            } else {
-                const sub = zone.subcategory ? ` (${zone.subcategory})` : '';
-                tagDisplay = `<i class="fa-solid fa-skull" style="color:#d8b4fe;"></i> Crime${sub}`;
-            }
+            const iconHtml = isWilla 
+                ? '<i class="fa-solid fa-house-chimney" style="color:#fde047;"></i>' 
+                : '<i class="fa-solid fa-skull" style="color:#d8b4fe;"></i>';
+
+            const sub = zone.subcategory ? ` (${zone.subcategory})` : '';
+            const categoryText = isWilla ? 'Willa' : `Crime${sub}`;
 
             const labelHtml = `
                 <div class="zone-label-container">
                     <div class="zone-label-title">${zone.name}</div>
                     <div class="zone-label-pill">
-                        <span>${zone.slots || '0/0'} <i class="fa-solid fa-users"></i></span>
-                        <span style="opacity:0.35; margin:0 3px;">•</span>
-                        <span>${tagDisplay}</span>
+                        <span class="label-slots">${zone.slots || '0/0'} <i class="fa-solid fa-users" style="font-size:9px;"></i></span>
+                        <span class="label-bullet" style="opacity:0.35; margin:0 2px;">•</span>
+                        <span class="label-category">${iconHtml} <span class="label-cat-name">${categoryText}</span></span>
                     </div>
                 </div>
             `;
