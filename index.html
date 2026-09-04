@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PrimeRP - Mapa interiorów Crime & Willi</title>
+    <title>PrimeRP - Mapa Interiorów & Stref</title>
     <link rel="icon" type="image/png" href="prime.png">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -15,10 +15,10 @@
             --primary: #a855f7;
             --primary-hover: #9333ea;
             --primary-glow: rgba(168, 85, 247, 0.45);
-            --bg-dark: #090a0d;
-            --bg-panel: rgba(10, 11, 15, 0.96);
-            --border-color: rgba(255, 255, 255, 0.08);
-            --border-highlight: rgba(168, 85, 247, 0.4);
+            --bg-dark: #07090e;
+            --bg-panel: rgba(11, 13, 19, 0.94);
+            --border-color: rgba(255, 255, 255, 0.09);
+            --border-highlight: rgba(168, 85, 247, 0.45);
             --willa-color: #eab308;
             --crime-color: #a855f7;
         }
@@ -39,23 +39,33 @@
         html, body, #map {
             width: 100%;
             height: 100%;
-            background-color: #0a0c10; /* Domyślnie głęboka czerń/ocean nocny */
             overflow: hidden;
             transition: background-color 0.3s ease;
         }
 
-        /* Tryb jasny (klasyczny błękitny ocean GTA) */
+        /* CIEMNA MAPA GTA: idealne zgranie tła z przefiltrowanym oceanem - ZERO NIEBIESKIEGO KWADRATU */
+        body.dark-tiles-theme, body.dark-tiles-theme #map {
+            background-color: #080d16 !important;
+        }
+        body.dark-tiles-theme .leaflet-tile {
+            filter: invert(1) hue-rotate(180deg) brightness(0.62) contrast(1.25) saturate(0.9);
+            outline: 1px solid transparent;
+        }
+
+        /* KLASYCZNA MAPA GTA: tło idealnie zgrane z błękitnym oceanem atlas */
         body.classic-water-theme, body.classic-water-theme #map {
             background-color: #0fa8d2 !important;
         }
-
-        /* Tryb ciemny / czarny dla kafelków mapy */
-        body.dark-tiles-theme .leaflet-tile {
-            filter: brightness(0.75) contrast(1.2) saturate(0.85);
+        body.classic-water-theme .leaflet-tile {
+            filter: none;
+            outline: 1px solid transparent;
         }
 
-        body.tactical-black-theme .leaflet-tile {
-            filter: invert(100%) hue-rotate(180deg) brightness(85%) contrast(125%) grayscale(0.5);
+        /* Eliminuje 1px czarne linie siatki pomiędzy kafelkami */
+        .leaflet-tile {
+            outline: 1px solid transparent;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
         }
 
         /* LOADING SCREEN */
@@ -65,29 +75,20 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle, #1a1c23 0%, #090a0d 100%);
+            background: radial-gradient(circle, #151821 0%, #07090e 100%);
             z-index: 9999;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            transition: opacity 0.6s ease, visibility 0.6s ease;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
         }
         .spinner-container {
             position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-bottom: 25px;
-        }
-        .loading-badge {
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 32px;
-            font-weight: 900;
-            color: #fff;
-            letter-spacing: 3px;
-            text-shadow: 0 0 20px var(--primary-glow);
-            animation: pulse-logo 2s infinite ease-in-out;
+            margin-bottom: 22px;
         }
         .spinner-ring {
             position: absolute;
@@ -95,7 +96,7 @@
             height: 130px;
             border: 3px solid transparent;
             border-top: 3px solid #a855f7;
-            border-bottom: 3px solid #535353;
+            border-bottom: 3px solid rgba(255, 255, 255, 0.2);
             border-radius: 50%;
             animation: pulse-ring 1.8s infinite ease-in-out;
         }
@@ -126,24 +127,41 @@
             visibility: hidden;
         }
 
-        /* TOP NAVIGATION / BRANDING */
-        .top-brand-bar {
+        /* --- NOWOCZESNY ZUNIFIKOWANY PASEK GÓRNY (HUD NAVBAR) --- */
+        .main-top-navbar {
             position: absolute;
-            top: 20px;
-            left: 80px;
+            top: 16px;
+            left: 20px;
+            right: 20px;
             z-index: 1000;
             display: flex;
             align-items: center;
-            gap: 12px;
+            justify-content: space-between;
+            gap: 16px;
             background: var(--bg-panel);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--border-color);
-            padding: 8px 18px;
-            border-radius: 10px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+            border-radius: 14px;
+            padding: 10px 20px;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.75);
+            pointer-events: auto;
         }
-        .top-brand-badge {
+
+        /* BRAND */
+        .nav-brand-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+        .nav-logo {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.6));
+        }
+        .nav-brand-badge {
             background: linear-gradient(135deg, #a855f7, #6b21a8);
             color: #fff;
             font-family: 'Rajdhani', sans-serif;
@@ -151,41 +169,34 @@
             font-size: 15px;
             padding: 4px 10px;
             border-radius: 6px;
-            letter-spacing: 1px;
-            box-shadow: 0 0 12px var(--primary-glow);
+            letter-spacing: 1.2px;
+            box-shadow: 0 0 14px var(--primary-glow);
         }
-        .top-brand-title {
-            color: #fff;
+        .nav-brand-title {
+            color: #ffffff;
             font-size: 14px;
-            font-weight: 600;
+            font-weight: 700;
             letter-spacing: 0.5px;
+            white-space: nowrap;
         }
 
-        /* CATEGORY FILTER BAR */
-        .filter-bar {
-            position: absolute;
-            top: 76px;
-            left: 80px;
-            z-index: 1000;
+        /* FILTRY KATEGORII W CENTRUM */
+        .nav-filters-section {
             display: flex;
             align-items: center;
             gap: 6px;
-            background: var(--bg-panel);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            border: 1px solid var(--border-color);
-            padding: 6px 10px;
+            background: rgba(0, 0, 0, 0.35);
+            padding: 4px 8px;
             border-radius: 10px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
-            max-width: calc(100vw - 120px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             overflow-x: auto;
         }
-        .filter-btn {
-            background: rgba(255, 255, 255, 0.04);
+        .filter-chip {
+            background: transparent;
             border: 1px solid transparent;
             color: rgba(255, 255, 255, 0.75);
-            padding: 6px 12px;
-            border-radius: 6px;
+            padding: 6px 14px;
+            border-radius: 8px;
             font-size: 12px;
             font-weight: 600;
             cursor: pointer;
@@ -193,154 +204,118 @@
             white-space: nowrap;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 7px;
         }
-        .filter-btn:hover {
+        .filter-chip:hover {
             color: #fff;
-            background: rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.09);
         }
-        .filter-btn.active {
+        .filter-chip.active {
             background: var(--primary);
             color: #fff;
-            border-color: var(--primary-glow);
-            box-shadow: 0 0 12px var(--primary-glow);
+            box-shadow: 0 0 14px var(--primary-glow);
         }
-        .filter-btn.active.willa-btn {
-            background: #ca8a04;
-            box-shadow: 0 0 12px rgba(234, 179, 8, 0.5);
+        .filter-chip.chip-willa.active {
+            background: linear-gradient(135deg, #ca8a04, #a16207);
+            box-shadow: 0 0 14px rgba(234, 179, 8, 0.5);
+        }
+        .filter-divider {
+            width: 1px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.12);
+            margin: 0 3px;
         }
 
-        /* TOP RIGHT CONTROLS */
-        .top-right-bar {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
+        /* PRAWE KONTROLKI (STYL MAPY, TRYB, PANEL ADMINA) */
+        .nav-controls-section {
             display: flex;
             align-items: center;
             gap: 10px;
+            flex-shrink: 0;
         }
-
-        .map-style-widget {
-            display: flex;
-            align-items: center;
-            background: var(--bg-panel);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 4px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
-            gap: 4px;
-        }
-
-        .style-select {
+        .nav-btn {
             background: rgba(255, 255, 255, 0.06);
             border: 1px solid var(--border-color);
             color: #fff;
-            padding: 6px 10px;
-            border-radius: 6px;
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+        .nav-btn.active {
+            background: rgba(168, 85, 247, 0.25);
+            border-color: var(--primary);
+            color: #fff;
+            box-shadow: 0 0 12px var(--primary-glow);
+        }
+        .nav-admin-btn {
+            background: linear-gradient(135deg, #a855f7, #7e22ce);
+            color: #fff;
+            border: none;
+            box-shadow: 0 4px 15px var(--primary-glow);
+        }
+        .nav-admin-btn:hover {
+            background: linear-gradient(135deg, #c084fc, #9333ea);
+            box-shadow: 0 6px 20px rgba(168, 85, 247, 0.6);
+            transform: translateY(-1px);
+        }
+
+        .map-style-select {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border-color);
+            color: #fff;
+            padding: 7px 10px;
+            border-radius: 8px;
             font-size: 12px;
             font-weight: 600;
             outline: none;
             cursor: pointer;
             transition: border-color 0.2s;
         }
-        .style-select:hover, .style-select:focus {
+        .map-style-select:hover, .map-style-select:focus {
             border-color: var(--primary);
         }
-        .style-select option {
-            background: #12141a;
+        .map-style-select option {
+            background: #11131a;
             color: #fff;
-        }
-
-        .theme-toggle-btn {
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid var(--border-color);
-            color: rgba(255, 255, 255, 0.85);
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-        .theme-toggle-btn:hover {
-            color: #fff;
-            background: rgba(168, 85, 247, 0.2);
-            border-color: var(--border-highlight);
-        }
-        .theme-toggle-btn.active {
-            background: rgba(168, 85, 247, 0.3);
-            border-color: var(--primary);
-            color: #fff;
-            box-shadow: 0 0 10px var(--primary-glow);
-        }
-
-        /* ADMIN LINK BUTTON */
-        .admin-nav-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: var(--bg-panel);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--border-color);
-            color: #fff;
-            padding: 10px 18px;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: 600;
-            text-decoration: none;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
-            transition: all 0.25s ease;
-            white-space: nowrap;
-        }
-        .admin-nav-btn:hover {
-            border-color: var(--border-highlight);
-            background: rgba(168, 85, 247, 0.15);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px var(--primary-glow);
-        }
-        .admin-nav-btn i {
-            color: var(--primary);
         }
 
         /* LEAFLET OVERRIDES */
         .leaflet-top.leaflet-left {
-            top: 20px !important;
+            top: 90px !important;
             left: 20px !important;
         }
         .leaflet-control-zoom {
             border: 1px solid rgba(255, 255, 255, 0.12) !important;
-            border-radius: 8px !important;
+            border-radius: 10px !important;
             overflow: hidden;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.8) !important;
-            display: flex;
-            flex-direction: column;
-            gap: 0 !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8) !important;
         }
         .leaflet-control-zoom a {
-            background: rgba(10, 10, 12, 0.95) !important;
+            background: rgba(11, 13, 19, 0.95) !important;
             color: #ffffff !important;
             border: none !important;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-            border-radius: 0 !important;
-            width: 40px !important;
-            height: 40px !important;
-            line-height: 40px !important;
-            font-size: 18px !important;
+            width: 38px !important;
+            height: 38px !important;
+            line-height: 38px !important;
+            font-size: 17px !important;
             transition: all 0.2s ease;
         }
-        .leaflet-control-zoom a:last-child {
-            border-bottom: none !important;
-        }
         .leaflet-control-zoom a:hover {
-            background: rgba(168, 85, 247, 0.85) !important;
+            background: var(--primary) !important;
             color: #fff !important;
         }
 
@@ -349,13 +324,13 @@
             bottom: 20px;
             left: 20px;
             z-index: 1000;
-            padding: 12px 20px;
-            background: rgba(8, 8, 10, 0.95);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid var(--border-highlight);
-            border-radius: 8px;
-            color: rgba(255, 255, 255, 0.85);
+            padding: 10px 18px;
+            background: rgba(11, 13, 19, 0.92);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: rgba(255, 255, 255, 0.8);
             font-size: 13px;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
             display: flex;
@@ -369,14 +344,14 @@
             position: absolute;
             top: 0;
             right: -460px;
-            width: 420px;
+            width: 430px;
             height: 100%;
             z-index: 1001;
             background: var(--bg-panel);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
             border-left: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: -15px 0 40px rgba(0, 0, 0, 0.95);
+            box-shadow: -20px 0 50px rgba(0, 0, 0, 0.95);
             padding: 30px 25px;
             color: #fff;
             display: flex;
@@ -392,15 +367,15 @@
             position: absolute;
             top: 20px;
             right: 20px;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.06);
             border: 1px solid var(--border-color);
             border-radius: 50%;
-            width: 32px;
-            height: 32px;
+            width: 34px;
+            height: 34px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: rgba(255, 255, 255, 0.6);
+            color: rgba(255, 255, 255, 0.7);
             font-size: 16px;
             cursor: pointer;
             transition: all 0.2s;
@@ -409,6 +384,7 @@
             color: #fff;
             background: var(--primary);
             border-color: var(--primary);
+            transform: scale(1.05);
         }
         .sidebar-title {
             font-size: 26px;
@@ -461,10 +437,10 @@
         .stats-box {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
             background: rgba(255, 255, 255, 0.03);
             padding: 15px;
-            border-radius: 8px;
+            border-radius: 10px;
             border: 1px solid rgba(255, 255, 255, 0.06);
         }
         .stat-item {
@@ -514,7 +490,7 @@
             white-space: pre-wrap;
         }
 
-        /* PHOTOS GALLERY IN SIDEBAR */
+        /* PHOTOS GALLERY */
         .photos-section {
             display: flex;
             flex-direction: column;
@@ -527,7 +503,7 @@
         }
         .photo-card {
             position: relative;
-            height: 110px;
+            height: 115px;
             border-radius: 8px;
             overflow: hidden;
             border: 1px solid var(--border-color);
@@ -568,13 +544,14 @@
             opacity: 1;
         }
 
+        /* DISCORD BUTTON */
         .btn-apply {
             position: relative;
             margin-top: auto;
             padding: 16px 20px;
             background: linear-gradient(135deg, #a855f7, #6b21a8);
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             color: #fff;
             font-weight: 700;
             letter-spacing: 1px;
@@ -582,7 +559,7 @@
             cursor: pointer;
             overflow: hidden;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.35);
+            box-shadow: 0 4px 18px rgba(168, 85, 247, 0.4);
             text-decoration: none;
             display: flex;
             align-items: center;
@@ -590,7 +567,7 @@
         }
         .btn-apply:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(168, 85, 247, 0.6);
+            box-shadow: 0 6px 25px rgba(168, 85, 247, 0.65);
             background: linear-gradient(135deg, #c084fc, #7e22ce);
         }
 
@@ -655,12 +632,11 @@
             transform: scale(1.1);
         }
 
-        /* NAV ARROWS (LEWO / PRAWO) */
         .lightbox-nav-btn {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            background: rgba(15, 17, 24, 0.75);
+            background: rgba(15, 17, 24, 0.8);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.18);
@@ -683,14 +659,9 @@
             box-shadow: 0 0 25px var(--primary-glow);
             transform: translateY(-50%) scale(1.12);
         }
-        .lightbox-prev {
-            left: 30px;
-        }
-        .lightbox-next {
-            right: 30px;
-        }
+        .lightbox-prev { left: 30px; }
+        .lightbox-next { right: 30px; }
 
-        /* LICZNIK ZDJĘĆ */
         .lightbox-counter {
             position: absolute;
             bottom: 24px;
@@ -713,11 +684,12 @@
             gap: 6px;
         }
 
-        /* TOOLTIP LABELS */
+        /* --- STYL ETYKIET STREF NA MAPIE (INTELIGENTNE / BEZ KOLIZJI) --- */
         .zone-label {
             background: transparent !important;
             border: none !important;
             box-shadow: none !important;
+            transition: opacity 0.2s ease;
         }
         .zone-label-container {
             display: flex;
@@ -726,53 +698,71 @@
             justify-content: center;
             pointer-events: none;
             user-select: none;
+            transition: transform 0.2s ease;
         }
         .zone-label-title {
-            font-size: 15px;
-            font-weight: 900;
+            font-size: 12px;
+            font-weight: 800;
             color: #ffffff;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            text-shadow: 0px 2px 5px rgba(0, 0, 0, 0.9), 0px 0px 3px rgba(0, 0, 0, 1);
-            margin-bottom: 4px;
+            letter-spacing: 0.8px;
+            text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.95), 0px 0px 3px rgba(0, 0, 0, 1);
+            margin-bottom: 2px;
             white-space: nowrap;
         }
         .zone-label-pill {
-            background: rgba(14, 16, 22, 0.9);
-            backdrop-filter: blur(6px);
-            -webkit-backdrop-filter: blur(6px);
-            padding: 3px 12px;
-            border-radius: 12px;
+            background: rgba(11, 13, 19, 0.92);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            padding: 3px 10px;
+            border-radius: 8px;
             color: #ffffff;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
+            gap: 5px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
             border: 1px solid rgba(255, 255, 255, 0.12);
         }
-        .zone-label-pill i {
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.85);
-        }
-        .leaflet-tile-container img {
-            background: transparent !important;
+
+        /* Klasa ukrywająca etykiety przy oddaleniu, aby nie nakładały się w mieście */
+        body.hide-map-labels .zone-label {
+            display: none !important;
         }
 
+        /* Styl podświetlenia po najechaniu myszką */
+        .zone-hover-active {
+            z-index: 9999 !important;
+        }
+        .zone-hover-active .zone-label-container {
+            transform: scale(1.12);
+        }
+        .zone-hover-active .zone-label-pill {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1100px) {
+            .main-top-navbar {
+                flex-wrap: wrap;
+                padding: 10px 14px;
+            }
+            .nav-filters-section {
+                order: 3;
+                width: 100%;
+                justify-content: flex-start;
+            }
+        }
         @media (max-width: 768px) {
-            .top-brand-bar {
-                left: 20px;
-                top: 70px;
-                padding: 6px 12px;
+            .main-top-navbar {
+                left: 10px;
+                right: 10px;
+                top: 10px;
             }
-            .filter-bar {
-                left: 20px;
-                top: 120px;
-            }
-            .top-right-bar {
-                top: 15px;
-                right: 15px;
+            .nav-brand-title {
+                display: none;
             }
             .sidebar {
                 width: 100%;
@@ -803,49 +793,55 @@
         <div class="loading-text">Ładowanie mapy PrimeRP...</div>
     </div>
 
-    <!-- BRAND BAR -->
-    <div class="top-brand-bar">
-        <img src="prime.png" alt="PrimeRP" style="width: 28px; height: 28px; object-fit: contain; filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.5));">
-        <div class="top-brand-badge">PrimeRP</div>
-        <div class="top-brand-title">Mapa Interiorów</div>
-    </div>
+    <!-- ZUNIFIKOWANY PASEK GÓRNY (HUD NAVBAR) -->
+    <header class="main-top-navbar">
+        <!-- LOGO & TYTUŁ -->
+        <div class="nav-brand-section">
+            <img src="prime.png" alt="PrimeRP" class="nav-logo">
+            <div class="nav-brand-badge">PrimeRP</div>
+            <span class="nav-brand-title">Mapa Interiorów</span>
+        </div>
 
-    <!-- CATEGORY FILTER BAR -->
-    <div class="filter-bar" id="categoryFilterBar">
-        <button class="filter-btn active" data-filter="all"><i class="fa-solid fa-layer-group"></i> Wszystkie</button>
-        <button class="filter-btn willa-btn" data-filter="willa"><i class="fa-solid fa-house-chimney"></i> Wille</button>
-        <button class="filter-btn" data-filter="crime"><i class="fa-solid fa-skull"></i> Crime</button>
-        <button class="filter-btn" data-filter="gang"><i class="fa-solid fa-gun"></i> Gangi</button>
-        <button class="filter-btn" data-filter="kartel"><i class="fa-solid fa-shield-halved"></i> Kartele</button>
-        <button class="filter-btn" data-filter="mafia"><i class="fa-solid fa-user-tie"></i> Mafie</button>
-    </div>
+        <!-- FILTRY KATEGORII -->
+        <nav class="nav-filters-section" id="categoryFilterBar">
+            <button class="filter-chip active" data-filter="all"><i class="fa-solid fa-layer-group"></i> Wszystkie</button>
+            <button class="filter-chip chip-willa" data-filter="willa"><i class="fa-solid fa-house-chimney"></i> Wille</button>
+            <button class="filter-chip chip-crime" data-filter="crime"><i class="fa-solid fa-skull"></i> Crime</button>
+            <div class="filter-divider"></div>
+            <button class="filter-chip" data-filter="gang"><i class="fa-solid fa-gun"></i> Gangi</button>
+            <button class="filter-chip" data-filter="kartel"><i class="fa-solid fa-shield-halved"></i> Kartele</button>
+            <button class="filter-chip" data-filter="mafia"><i class="fa-solid fa-user-tie"></i> Mafie</button>
+        </nav>
 
-    <!-- TOP RIGHT CONTROLS -->
-    <div class="top-right-bar">
-        <!-- MAP THEME & STYLE WIDGET -->
-        <div class="map-style-widget">
-            <select class="style-select" id="mapStyleSelect" title="Zmień wersję mapy GTA">
+        <!-- KONTROLKI PRAWE -->
+        <div class="nav-controls-section">
+            <select class="map-style-select" id="mapStyleSelect" title="Zmień wersję mapy GTA">
                 <option value="atlas">🗺️ GTA Atlas</option>
                 <option value="road">🛣️ GTA Ciemna (Road)</option>
                 <option value="satellite">🛰️ Satelita</option>
             </select>
-            <button class="theme-toggle-btn active" id="mapThemeToggle" title="Przełącz ciemny / jasny ocean">
-                <i class="fa-solid fa-moon"></i>
-                <span id="themeToggleText">Ciemny ocean</span>
-            </button>
-        </div>
 
-        <!-- LINK TO ADMIN PANEL -->
-        <a href="/admin" class="admin-nav-btn">
-            <i class="fa-solid fa-shield-halved"></i>
-            <span>Panel Admina</span>
-        </a>
-    </div>
+            <button class="nav-btn active" id="mapThemeToggle" title="Przełącz ciemny motyw (brak niebieskiego oceanu)">
+                <i class="fa-solid fa-moon"></i>
+                <span id="themeToggleText">Ciemna</span>
+            </button>
+
+            <button class="nav-btn active" id="labelsToggleBtn" title="Przełącz etykiety stref (automatyczne dopasowanie)">
+                <i class="fa-solid fa-tag"></i>
+                <span id="labelsToggleText">Etykiety: Auto</span>
+            </button>
+
+            <a href="/admin" class="nav-btn nav-admin-btn">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>Admin</span>
+            </a>
+        </div>
+    </header>
 
     <!-- HINT BOTTOM LEFT -->
     <div class="info-bottom-left">
         <i class="fa-solid fa-circle-info" style="color: #a855f7;"></i>
-        <span>Kliknij w odrysowaną strefę na mapie, aby zobaczyć jej szczegóły oraz zdjęcia.</span>
+        <span>Najedź lub kliknij na strefę na mapie, aby zobaczyć interior i galerię zdjęć.</span>
     </div>
 
     <!-- SIDEBAR FOR ZONE DETAILS -->
@@ -931,18 +927,19 @@
     }
 
     // --- MAP INITIALIZATION ---
+    // zoomDelta: 1 i zoomSnap: 1 eliminują subpixelowe czarne linie siatki (grid lines) na mapie!
     const map = L.map('map', {
         crs: L.CRS.Simple,
         minZoom: 3,
         maxZoom: 7,
-        zoomDelta: 0.5,
-        zoomSnap: 0.5,
+        zoomDelta: 1,
+        zoomSnap: 1,
         zoomControl: true,
         attributionControl: false
     });
 
     map.whenReady(() => {
-        setTimeout(hideLoadingScreen, 600);
+        setTimeout(hideLoadingScreen, 500);
     });
     setTimeout(hideLoadingScreen, 1200);
 
@@ -951,10 +948,10 @@
     const northEast = map.unproject([mapSize, 0], 7);
     const bounds = L.latLngBounds(southWest, northEast);
 
-    // Dynamic GTA Tile Layer supporting 'atlas', 'road' (dark), 'satellite'
+    // Dynamic GTA Tile Layer
     let currentTileLayer = null;
     let currentMapStyle = localStorage.getItem('primemap_map_style') || 'atlas';
-    let isDarkOcean = localStorage.getItem('primemap_dark_ocean') !== 'false'; // domyślnie ciemny ocean
+    let isDarkTheme = localStorage.getItem('primemap_dark_theme') !== 'false'; // Domyślnie ciemna mapa
 
     function setMapStyle(styleName) {
         currentMapStyle = styleName;
@@ -986,9 +983,9 @@
         }
     }
 
-    function setDarkOceanTheme(enabled) {
-        isDarkOcean = enabled;
-        localStorage.setItem('primemap_dark_ocean', enabled);
+    function setDarkTheme(enabled) {
+        isDarkTheme = enabled;
+        localStorage.setItem('primemap_dark_theme', enabled);
 
         const toggleBtn = document.getElementById('mapThemeToggle');
         const toggleText = document.getElementById('themeToggleText');
@@ -997,25 +994,64 @@
             document.body.classList.remove('classic-water-theme');
             document.body.classList.add('dark-tiles-theme');
             if (toggleBtn) toggleBtn.classList.add('active');
-            if (toggleText) toggleText.innerText = 'Ciemny ocean: WŁ';
+            if (toggleText) toggleText.innerText = 'Ciemna';
         } else {
             document.body.classList.add('classic-water-theme');
             document.body.classList.remove('dark-tiles-theme');
             if (toggleBtn) toggleBtn.classList.remove('active');
-            if (toggleText) toggleText.innerText = 'Jasny ocean: WŁ';
+            if (toggleText) toggleText.innerText = 'Jasna';
         }
     }
 
-    // Inicjalizacja stylu mapy i motywu
     setMapStyle(currentMapStyle);
-    setDarkOceanTheme(isDarkOcean);
+    setDarkTheme(isDarkTheme);
 
     document.getElementById('mapStyleSelect').addEventListener('change', (e) => {
         setMapStyle(e.target.value);
     });
 
     document.getElementById('mapThemeToggle').addEventListener('click', () => {
-        setDarkOceanTheme(!isDarkOcean);
+        setDarkTheme(!isDarkTheme);
+    });
+
+    // TRYB ETYKIET (AUTO / ZAWSZE / UKRYJ) - zapobiega nakładaniu się napisów w mieście!
+    let labelMode = localStorage.getItem('primemap_label_mode') || 'auto'; // 'auto', 'always', 'none'
+    const labelsToggleBtn = document.getElementById('labelsToggleBtn');
+    const labelsToggleText = document.getElementById('labelsToggleText');
+
+    function updateLabelVisibility() {
+        const currentZoom = map.getZoom();
+        if (labelMode === 'none') {
+            document.body.classList.add('hide-map-labels');
+            labelsToggleText.innerText = 'Etykiety: Wył';
+            labelsToggleBtn.classList.remove('active');
+        } else if (labelMode === 'always') {
+            document.body.classList.remove('hide-map-labels');
+            labelsToggleText.innerText = 'Etykiety: Zawsze';
+            labelsToggleBtn.classList.add('active');
+        } else {
+            // Auto: przy oddaleniu (<=4) ukryj stałe etykiety, aby nie kolidowały w South LS!
+            if (currentZoom <= 4) {
+                document.body.classList.add('hide-map-labels');
+            } else {
+                document.body.classList.remove('hide-map-labels');
+            }
+            labelsToggleText.innerText = 'Etykiety: Auto';
+            labelsToggleBtn.classList.add('active');
+        }
+    }
+
+    labelsToggleBtn.addEventListener('click', () => {
+        if (labelMode === 'auto') labelMode = 'always';
+        else if (labelMode === 'always') labelMode = 'none';
+        else labelMode = 'auto';
+
+        localStorage.setItem('primemap_label_mode', labelMode);
+        updateLabelVisibility();
+    });
+
+    map.on('zoomend', () => {
+        updateLabelVisibility();
     });
 
     map.setView([-45, 45], 4); 
@@ -1132,18 +1168,10 @@
                 color: color,
                 weight: 2,
                 fillColor: color,
-                fillOpacity: 0.35,
-                smoothFactor: 2.0
+                fillOpacity: 0.38,
+                smoothFactor: 1.5
             }).addTo(map);
 
-            polygon.on('mouseover', function () { 
-                this.setStyle({ fillOpacity: 0.6, weight: 3 }); 
-            });
-            polygon.on('mouseout', function () { 
-                this.setStyle({ fillOpacity: 0.35, weight: 2 }); 
-            });
-
-            // Etykieta strefy
             const center = polygon.getBounds().getCenter();
             
             let tagDisplay = '';
@@ -1154,17 +1182,41 @@
                 tagDisplay = `<i class="fa-solid fa-skull" style="color:#d8b4fe;"></i> Crime${sub}`;
             }
 
-            const tooltip = L.tooltip({ permanent: true, direction: 'center', className: 'zone-label' })
-                .setContent(`
-                    <div class="zone-label-container">
-                        <div class="zone-label-title">${zone.name}</div>
-                        <div class="zone-label-pill">
-                            <span>${zone.slots || '0/0'} <i class="fa-solid fa-users"></i></span>
-                            <span style="opacity:0.35; margin:0 3px;">•</span>
-                            <span>${tagDisplay}</span>
-                        </div>
+            const labelHtml = `
+                <div class="zone-label-container">
+                    <div class="zone-label-title">${zone.name}</div>
+                    <div class="zone-label-pill">
+                        <span>${zone.slots || '0/0'} <i class="fa-solid fa-users"></i></span>
+                        <span style="opacity:0.35; margin:0 3px;">•</span>
+                        <span>${tagDisplay}</span>
                     </div>
-                `).setLatLng(center).addTo(map);
+                </div>
+            `;
+
+            // Stała etykieta (sterowana przez klasę body.hide-map-labels)
+            const tooltip = L.tooltip({ 
+                permanent: true, 
+                direction: 'center', 
+                className: 'zone-label' 
+            }).setContent(labelHtml).setLatLng(center).addTo(map);
+
+            // Efekt hover: podświetlenie strefy i zawsze widoczna etykieta
+            polygon.on('mouseover', function () { 
+                this.setStyle({ fillOpacity: 0.68, weight: 3 });
+                if (tooltip._container) {
+                    tooltip._container.classList.add('zone-hover-active');
+                    tooltip._container.style.display = 'block';
+                }
+            });
+            polygon.on('mouseout', function () { 
+                this.setStyle({ fillOpacity: 0.38, weight: 2 });
+                if (tooltip._container) {
+                    tooltip._container.classList.remove('zone-hover-active');
+                    if (document.body.classList.contains('hide-map-labels')) {
+                        tooltip._container.style.display = '';
+                    }
+                }
+            });
 
             // Kliknięcie w strefę otwiera sidebar ze szczegółami i zdjęciami
             polygon.on('click', function (e) {
@@ -1175,6 +1227,8 @@
             renderedLayers.push(polygon);
             renderedLayers.push(tooltip);
         });
+
+        updateLabelVisibility();
     }
 
     function showZoneDetails(zone) {
@@ -1244,7 +1298,7 @@
     // --- FILTROWANIE KATEGORII ---
     function applyFilter(filter) {
         currentFilter = filter;
-        document.querySelectorAll('.filter-btn').forEach(b => {
+        document.querySelectorAll('.filter-chip').forEach(b => {
             if (b.dataset.filter === filter) {
                 b.classList.add('active');
             } else {
@@ -1268,7 +1322,7 @@
         renderZones(filtered);
     }
 
-    document.querySelectorAll('.filter-btn').forEach(btn => {
+    document.querySelectorAll('.filter-chip').forEach(btn => {
         btn.addEventListener('click', () => {
             applyFilter(btn.dataset.filter);
         });

@@ -45,12 +45,27 @@
             transition: background-color 0.3s ease;
         }
 
+        /* CIEMNA MAPA GTA: tło zgrane z przefiltrowanym oceanem */
+        body.dark-tiles-theme, body.dark-tiles-theme #map {
+            background-color: #080d16 !important;
+        }
+        body.dark-tiles-theme .leaflet-tile {
+            filter: invert(1) hue-rotate(180deg) brightness(0.62) contrast(1.25) saturate(0.9);
+            outline: 1px solid transparent;
+        }
+
         body.classic-water-theme, body.classic-water-theme #map {
             background-color: #0fa8d2 !important;
         }
+        body.classic-water-theme .leaflet-tile {
+            filter: none;
+            outline: 1px solid transparent;
+        }
 
-        body.dark-tiles-theme .leaflet-tile {
-            filter: brightness(0.75) contrast(1.2) saturate(0.85);
+        .leaflet-tile {
+            outline: 1px solid transparent;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
         }
 
         .admin-cat-badge {
@@ -462,22 +477,54 @@
         .color-palette {
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-top: 4px;
+            gap: 10px;
+            flex-wrap: wrap;
+            background: rgba(0, 0, 0, 0.35);
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
         }
 
         .color-dot {
-            width: 26px;
-            height: 26px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             cursor: pointer;
             border: 2px solid transparent;
-            transition: transform 0.2s, border-color 0.2s;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
         }
 
-        .color-dot.active, .color-dot:hover {
+        .color-dot:hover {
             transform: scale(1.15);
-            border-color: #fff;
+            border-color: rgba(255, 255, 255, 0.6);
+        }
+
+        .color-dot.active {
+            transform: scale(1.2);
+            border-color: #ffffff;
+            box-shadow: 0 0 12px currentColor;
+        }
+
+        .btn-custom-color {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px dashed rgba(255, 255, 255, 0.35);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-custom-color:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 0 10px var(--primary-glow);
         }
 
         /* PHOTO URL ADDER */
@@ -926,22 +973,29 @@
                     </div>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">Zajęte bazy / sloty</label>
-                        <input type="text" class="form-control" id="zoneSlotsInput" placeholder="np. 0 / 2" value="0 / 2">
+                <div class="form-group">
+                    <label class="form-label">Zajęte bazy / sloty</label>
+                    <input type="text" class="form-control" id="zoneSlotsInput" placeholder="np. 0 / 2" value="0 / 2">
+                </div>
+
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label class="form-label" style="margin-bottom: 0;">Kolor strefy na mapie</label>
+                        <span id="colorHexIndicator" style="font-size: 11px; font-weight: 700; color: #a855f7; font-family: monospace;">#a855f7</span>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Kolor strefy</label>
-                        <div class="color-palette">
-                            <div class="color-dot active" data-color="#a855f7" style="background: #a855f7;" title="Fioletowy (Crime)"></div>
-                            <div class="color-dot" data-color="#eab308" style="background: #eab308;" title="Złoty (Willa)"></div>
-                            <div class="color-dot" data-color="#ff2a2a" style="background: #ff2a2a;" title="Czerwony"></div>
-                            <div class="color-dot" data-color="#2f80ed" style="background: #2f80ed;" title="Niebieski"></div>
-                            <div class="color-dot" data-color="#27ae60" style="background: #27ae60;" title="Zielony"></div>
-                            <div class="color-dot" data-color="#f2994a" style="background: #f2994a;" title="Pomarańczowy"></div>
-                            <input type="color" id="customColorPicker" value="#a855f7" style="opacity: 0; width: 0; height: 0; position: absolute;">
-                        </div>
+                    <div class="color-palette">
+                        <div class="color-dot active" data-color="#a855f7" style="background: #a855f7;" title="Fioletowy (Crime)"></div>
+                        <div class="color-dot" data-color="#eab308" style="background: #eab308;" title="Złoty (Willa)"></div>
+                        <div class="color-dot" data-color="#ff2a2a" style="background: #ff2a2a;" title="Czerwony"></div>
+                        <div class="color-dot" data-color="#2f80ed" style="background: #2f80ed;" title="Niebieski"></div>
+                        <div class="color-dot" data-color="#27ae60" style="background: #27ae60;" title="Zielony"></div>
+                        <div class="color-dot" data-color="#f2994a" style="background: #f2994a;" title="Pomarańczowy"></div>
+                        <div class="color-dot" data-color="#06b6d4" style="background: #06b6d4;" title="Cyjan / Błękit"></div>
+                        <div class="color-dot" data-color="#ec4899" style="background: #ec4899;" title="Różowy"></div>
+                        <button type="button" class="btn-custom-color" id="customColorBtn" title="Wybierz własny kolor z próbnika">
+                            <i class="fa-solid fa-eye-dropper"></i>
+                        </button>
+                        <input type="color" id="customColorPicker" value="#a855f7" style="opacity: 0; width: 0; height: 0; position: absolute; pointer-events: none;">
                     </div>
                 </div>
 
@@ -1017,8 +1071,8 @@
         crs: L.CRS.Simple,
         minZoom: 3,
         maxZoom: 7,
-        zoomDelta: 0.5,
-        zoomSnap: 0.5,
+        zoomDelta: 1,
+        zoomSnap: 1,
         zoomControl: true,
         attributionControl: false
     });
@@ -1185,14 +1239,36 @@
     });
 
     // --- COLOR PALETTE ---
+    const colorHexIndicator = document.getElementById('colorHexIndicator');
+    const customColorBtn = document.getElementById('customColorBtn');
+    const customColorPicker = document.getElementById('customColorPicker');
+
+    function applySelectedColor(color) {
+        currentSelectedColor = color;
+        if (colorHexIndicator) {
+            colorHexIndicator.innerText = color.toUpperCase();
+            colorHexIndicator.style.color = color;
+        }
+        updatePreviewStyles();
+    }
+
     document.querySelectorAll('.color-dot').forEach(dot => {
         dot.addEventListener('click', () => {
             document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
             dot.classList.add('active');
-            currentSelectedColor = dot.dataset.color;
-            updatePreviewStyles();
+            applySelectedColor(dot.dataset.color);
         });
     });
+
+    if (customColorBtn && customColorPicker) {
+        customColorBtn.addEventListener('click', () => {
+            customColorPicker.click();
+        });
+        customColorPicker.addEventListener('input', (e) => {
+            document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+            applySelectedColor(e.target.value);
+        });
+    }
 
     // --- DRAWING LOGIC ---
     function updateDrawUI() {
@@ -1585,7 +1661,7 @@
         zoneDescInput.value = zone.desc || '';
 
         // Ustawienie koloru
-        currentSelectedColor = zone.color || (isWilla ? '#eab308' : '#a855f7');
+        applySelectedColor(zone.color || (isWilla ? '#eab308' : '#a855f7'));
         document.querySelectorAll('.color-dot').forEach(d => {
             if (d.dataset.color.toLowerCase() === currentSelectedColor.toLowerCase()) {
                 d.classList.add('active');
@@ -1637,6 +1713,14 @@
         if (crimeSubcategoryGroup) crimeSubcategoryGroup.style.display = 'flex';
         zoneSlotsInput.value = '0 / 2';
         zoneDescInput.value = '';
+        applySelectedColor('#a855f7');
+        document.querySelectorAll('.color-dot').forEach(d => {
+            if (d.dataset.color.toLowerCase() === '#a855f7') {
+                d.classList.add('active');
+            } else {
+                d.classList.remove('active');
+            }
+        });
         addedPhotos = [];
         renderPhotosPreview();
 
